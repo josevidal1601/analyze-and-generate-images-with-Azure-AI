@@ -1,21 +1,17 @@
 import React from 'react';
 import { useState } from 'react';
 import './App.css';
-import analyzeImage, { isConfigured } from './azure-image-analysis';
-import generateImage, { isConfiguredOpenIa } from './openAI-image-generation';
-// import react-dom
+import ImageAnalysisAzure from './azure-image-analysis';
+import ImageGenerationOpenAI from './openAI-image-generation';
 import ReactDOM from 'react-dom';
 
-// Create function app to render a title and form input with two buttons
 function App() {
-  const [inputAnalyze, setInputAnalyze] = useState('');
+  const [inputAnalyzeGenerate, setInputAnalyzeGenerate] = useState('');
   const resultDiv = document.getElementById('result');
   let titleResponse = '';
 
-  const isConfiguredImageAnalysis = isConfigured();
-  const isConfiguredImageGeneration = isConfiguredOpenIa();
-
-  if (!isConfiguredImageAnalysis || !isConfiguredImageGeneration) {
+  // Ensure that the keys and endpoints are configured
+  if (!ImageAnalysisAzure.isConfigured() || !ImageGenerationOpenAI.isConfigured()) {
     return (
       <div className="App">
         <p>Key and/or endpoint not configured for cognitive services.</p>
@@ -23,12 +19,14 @@ function App() {
     );
   }
 
+  // Loading page
   function LoadingPage(props) {
     if (props.loading) {
       return <p>Loading...</p>;
     }
   }
 
+  // Analyze URL image from Azure with Image Analysis API 4.0
   function AnalyzeClick() {
     console.log('Click happened');
     // render loadingPage function
@@ -38,10 +36,12 @@ function App() {
     );
 
     // call function analyzeImage and print response
-    analyzeImage(inputAnalyze).then(response => {
+    ImageAnalysisAzure.analyzeImage(inputAnalyzeGenerate).then(response => {
       titleResponse = "Computer Vision Analysis";
+
+      // render DisplayResults function
       ReactDOM.render(
-        DisplayResults({response: response, url: inputAnalyze}),
+        DisplayResults({response: response, url: inputAnalyzeGenerate}),
         resultDiv
       );
     }, error => {
@@ -49,6 +49,7 @@ function App() {
       ReactDOM.render(
         <>
           <p>Ocurrió un error inesperado: {error.message}</p>
+          <pre>{JSON.stringify(error.response, null, 2)}</pre>
           <pre>{JSON.stringify(error, null, 2)}</pre>
         </>,
         resultDiv
@@ -56,6 +57,7 @@ function App() {
     });
   }
 
+  // Generate image from OpenAI with DALL-E send prompt text
   function GenerateClick() {
     console.log('Click happened');
     // render loadingPage function
@@ -65,8 +67,10 @@ function App() {
     );
 
     // call function generateImage and print response
-    generateImage(inputAnalyze).then(response => {
+    ImageGenerationOpenAI.generateImage(inputAnalyzeGenerate).then(response => {
       titleResponse = "Image Generation";
+
+      // render DisplayResults function
       ReactDOM.render(
         DisplayResults({response: response, url: response.data[0].url}),
         resultDiv
@@ -76,6 +80,7 @@ function App() {
       ReactDOM.render(
         <>
           <p>Ocurrió un error inesperado: {error.message}</p>
+          <pre>{JSON.stringify(error.response, null, 2)}</pre>
           <pre>{JSON.stringify(error, null, 2)}</pre>
         </>,
         resultDiv
@@ -83,13 +88,14 @@ function App() {
     });
   }
 
+  // Display results
   function DisplayResults(props) {
     if (props.response) {
       return (
         <>
           <hr/>
           <h2>{titleResponse}</h2>
-          <img src={props.url} alt="pic analyzed" width="400" height="auto" />
+          <img src={props.url} alt="pic analyzed or generated" width="400" height="auto" />
           <p>URL: {props.url}</p>
           <pre
           style={{
@@ -110,9 +116,9 @@ function App() {
       <h1>Computer vision</h1>
       <label>Insert URL or type prompt: </label>
       <br></br>
-      <input name="inputAnalyze" id="inputAnalyze" value={inputAnalyze} 
+      <input name="inputAnalyze" id="inputAnalyze" value={inputAnalyzeGenerate} 
         type="text" placeholder="Enter URL to analyze or textual prompt to generate an image" 
-        onChange={e => setInputAnalyze(e.target.value)}/>
+        onChange={e => setInputAnalyzeGenerate(e.target.value)}/>
       <br></br>
       <button className="btnAnalyze" onClick={AnalyzeClick}>Analyze</button>
       <button className="btnGenerate" onClick={GenerateClick}>Generate</button>
@@ -121,6 +127,5 @@ function App() {
   );
 
 };
-
 
 export default App;
