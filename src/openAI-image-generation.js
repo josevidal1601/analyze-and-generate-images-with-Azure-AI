@@ -4,6 +4,7 @@ const generateImage = async (text) => {
     const openAiKey = process.env.REACT_APP_OPENAI_API_KEY;
     const urlBase = "https://api.openai.com/v1/images/generations";
     const bearerToken = "Bearer " + openAiKey;
+    console.log("Bearer token: " + bearerToken);
     const requestData = {
         model: "dall-e-2",
         prompt: text,
