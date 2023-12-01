@@ -37,10 +37,8 @@ function App() {
       resultDiv
     );
 
-    // call function analyzeImage and print response in console
+    // call function analyzeImage and print response
     analyzeImage(inputAnalyze).then(response => {
-      // convert response to json
-      // console.log(JSON.stringify(response));
       titleResponse = "Computer Vision Analysis";
       ReactDOM.render(
         DisplayResults({response: response, url: inputAnalyze}),
@@ -66,10 +64,8 @@ function App() {
       resultDiv
     );
 
-    // call function generateImage and print response in console
+    // call function generateImage and print response
     generateImage(inputAnalyze).then(response => {
-      // convert response to json
-      // console.log(JSON.stringify(response));
       titleResponse = "Image Generation";
       ReactDOM.render(
         DisplayResults({response: response, url: response.data[0].url}),
